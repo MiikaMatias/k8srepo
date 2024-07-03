@@ -7,7 +7,7 @@ fi
 
 cd "$1" || { echo "Failed to change directory to $1"; exit 1; }
 
-DEPLOYMENT_NAME="project-dep"
+DEPLOYMENT_NAME="$1-dep"
 IMAGE_NAME="kontrakti/$1"
 IMAGE_TAG="latest"
 

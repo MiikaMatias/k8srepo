@@ -1,17 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hashgenerator-dep
+  name: log-output-dep
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hashgenerator
+      app: log-output
   template:
     metadata:
       labels:
-        app: hashgenerator
+        app: log-output
     spec:
       containers:
-        - name: hashgenerator
+        - name: log-output
           image: kontrakti/log-output:latest
+          env: 
+            - name: PORT
+              value: "3000"
+          ports:
+            - containerPort: 3000
