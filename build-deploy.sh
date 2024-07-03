@@ -7,10 +7,16 @@ fi
 
 cd "$1" || { echo "Failed to change directory to $1"; exit 1; }
 
-DEPLOYMENT_NAME="hashresponse-dep"
+DEPLOYMENT_NAME="project-dep"
 IMAGE_NAME="kontrakti/$1"
 IMAGE_TAG="latest"
 DEPLOYMENT_MANIFEST="manifests/deployment.yaml"
+
+#echo "Deleting cluster"
+#k3d cluster delete
+
+#echo "Redeploying cluster"
+#k3d cluster create --port 8082:30080@agent:0 -p 8081:80@loadbalancer --agents 2
 
 echo "Deleting Kubernetes deployment $DEPLOYMENT_NAME..."
 kubectl delete deployments $DEPLOYMENT_NAME
@@ -22,7 +28,7 @@ echo "Pushing Docker image $IMAGE_NAME:$IMAGE_TAG to registry..."
 docker push $IMAGE_NAME:$IMAGE_TAG || { echo "Docker push failed"; exit 1; }
 
 echo "Creating service"
-kubectl apply -f manifests/service.yaml
+kubectl apply -f manifests/service.yaml || { echo "Failed to apply Kubernetes service"; exit 1; }
 
 echo "Applying Kubernetes deployment from $DEPLOYMENT_MANIFEST..."
 kubectl apply -f $DEPLOYMENT_MANIFEST || { echo "Failed to apply Kubernetes deployment"; exit 1; }

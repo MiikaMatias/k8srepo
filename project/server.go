@@ -14,7 +14,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	fmt.Printf("Server started in port %s\n", port)
-	if err := http.ListenAndServe(fmt.Sprintf("localhost:%s", port), nil); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
 		log.Fatal(err)
 	}
 }
