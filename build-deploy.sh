@@ -10,7 +10,6 @@ cd "$1" || { echo "Failed to change directory to $1"; exit 1; }
 DEPLOYMENT_NAME="project-dep"
 IMAGE_NAME="kontrakti/$1"
 IMAGE_TAG="latest"
-DEPLOYMENT_MANIFEST="manifests/deployment.yaml"
 
 #echo "Deleting cluster"
 #k3d cluster delete
@@ -28,10 +27,7 @@ echo "Pushing Docker image $IMAGE_NAME:$IMAGE_TAG to registry..."
 docker push $IMAGE_NAME:$IMAGE_TAG || { echo "Docker push failed"; exit 1; }
 
 echo "Creating service"
-kubectl apply -f manifests/service.yaml || { echo "Failed to apply Kubernetes service"; exit 1; }
-
-echo "Applying Kubernetes deployment from $DEPLOYMENT_MANIFEST..."
-kubectl apply -f $DEPLOYMENT_MANIFEST || { echo "Failed to apply Kubernetes deployment"; exit 1; }
+kubectl apply -f manifests/ || { echo "Failed to apply Kubernetes service"; exit 1; }
 
 echo "Waiting for deployment $DEPLOYMENT_NAME to be available..."
 kubectl wait --for=condition=available --timeout=600s deployment/$DEPLOYMENT_NAME || { echo "Deployment did not become available in time"; exit 1; }
