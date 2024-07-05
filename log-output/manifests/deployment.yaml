@@ -12,11 +12,37 @@ spec:
       labels:
         app: log-output
     spec:
+      volumes:
+        - name: shared-log
+          persistentVolumeClaim:
+            claimName: log-pv-claim
       containers:
-        - name: log-output
-          image: kontrakti/log-output:latest
+        - name: log-writer
+          image: kontrakti/log-writer:latest
+          volumeMounts: 
+          - name: shared-log
+            mountPath: /logs
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+        - name: log-reader
+          image: kontrakti/log-reader:latest
           env: 
             - name: PORT
               value: "3000"
           ports:
             - containerPort: 3000
+          volumeMounts: 
+          - name: shared-log
+            mountPath: /logs
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"

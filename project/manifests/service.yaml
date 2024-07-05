@@ -3,7 +3,6 @@ kind: Service
 metadata:
   name: project-svc
 spec:
-  type: ClusterIP
   selector:
     app: project
   ports:

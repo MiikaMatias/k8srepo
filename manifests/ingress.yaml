@@ -13,10 +13,10 @@ spec:
             name: ping-pong-svc
             port:
               number: 2345
-      - path: /
+      - path: /logs
         pathType: Prefix
         backend:
           service:
-            name: ping-pong-svc
+            name: log-reader-svc
             port:
               number: 2345
