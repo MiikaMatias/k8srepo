@@ -16,6 +16,9 @@ spec:
         - name: shared-log
           persistentVolumeClaim:
             claimName: log-pv-claim
+        - name: shared-ping-log
+          persistentVolumeClaim:
+            claimName: ping-log-pv-claim
       containers:
         - name: log-writer
           image: kontrakti/log-writer:latest
@@ -39,6 +42,8 @@ spec:
           volumeMounts: 
           - name: shared-log
             mountPath: /logs
+          - name: shared-ping-log
+            mountPath: /pinglogs
           resources:
             limits:
               memory: 512Mi

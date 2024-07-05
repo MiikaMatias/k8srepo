@@ -7,3 +7,4 @@ bash deploy.sh
 cd /home/miika/Projects/devopsK8s
 
 kubectl apply -f manifests/
+kubectl apply -f persistent-volumes/

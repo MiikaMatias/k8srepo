@@ -7,6 +7,11 @@ import (
 	"os"
 )
 
+const (
+	logFilePath     = "/logs/log.txt"
+	pingLogFilePath = "/pinglogs/pinglog.txt"
+)
+
 func check(e error) {
 	if e != nil {
 		panic(e)
@@ -15,9 +20,11 @@ func check(e error) {
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		dat, err := os.ReadFile("/logs/log.txt")
+		logs, err := os.ReadFile(logFilePath)
 		check(err)
-		fmt.Fprintf(w, string(dat))
+		pingpong, err := os.ReadFile(pingLogFilePath)
+		check(err)
+		fmt.Fprintf(w, fmt.Sprintf("%s\nPings / Pongs: %s", string(logs), string(pingpong)))
 	})
 
 	port := os.Getenv("PORT")

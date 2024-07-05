@@ -12,6 +12,10 @@ spec:
       labels:
         app: ping-pong
     spec:
+      volumes:
+        - name: shared-ping-log
+          persistentVolumeClaim:
+            claimName: ping-log-pv-claim
       containers:
         - name: ping-pong
           image: kontrakti/ping-pong:latest
@@ -20,3 +24,6 @@ spec:
             value: "3000"
           ports:
             - containerPort: 3000
+          volumeMounts: 
+          - name: shared-ping-log
+            mountPath: /pinglogs
