@@ -32,6 +32,7 @@ func writePing(pingString string) {
 }
 
 func main() {
+	// take this retarded variable and just use the file in the volume
 	counter := 0
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, fmt.Sprintf("pong %s", fmt.Sprintf("%v", counter)))

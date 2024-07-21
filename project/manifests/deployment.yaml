@@ -12,6 +12,10 @@ spec:
       labels:
         app: project
     spec:
+      volumes:
+        - name: main-image
+          persistentVolumeClaim:
+            claimName: main-image-claim
       containers:
         - name: project
           image: kontrakti/project:latest
@@ -20,3 +24,13 @@ spec:
             value: "3000"
           ports:
             - containerPort: 3000
+          volumeMounts: 
+          - name: main-image
+            mountPath: /go/assets
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"

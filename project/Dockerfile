@@ -1,5 +1,11 @@
 FROM golang:latest
 
-COPY server.go /
+RUN mkdir /go/assets
 
-CMD ["go", "run", "/server.go"]
+COPY server.go /go/
+COPY index.html /go/
+RUN chmod 777 -R /go
+
+WORKDIR /go
+
+CMD ["go", "run", "server.go"]
