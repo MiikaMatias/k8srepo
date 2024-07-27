@@ -39,6 +39,9 @@ func main() {
 		writePing(fmt.Sprintf("%v", counter))
 		counter++
 	})
+	http.HandleFunc("/no-increment", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, fmt.Sprintf("pong %s", fmt.Sprintf("%v", counter)))
+	})
 
 	port := os.Getenv("PORT")
 	fmt.Printf("Server started in port %s\n", port)

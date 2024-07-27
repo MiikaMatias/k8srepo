@@ -5,16 +5,17 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 )
 
 const (
-	logFilePath     = "/logs/log.txt"
-	pingLogFilePath = "/pinglogs/pinglog.txt"
+	logFilePath = "/logs/log.txt"
+	pingPongUrl = "ping-pong-svc:2345/no-increment"
 )
 
 func check(e error) {
 	if e != nil {
-		panic(e)
+		log.Fatal(e)
 	}
 }
 
@@ -22,9 +23,10 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		logs, err := os.ReadFile(logFilePath)
 		check(err)
-		pingpong, err := os.ReadFile(pingLogFilePath)
+		cmd := exec.Command("curl", pingPongUrl)
+		pingpong, err := cmd.Output()
 		check(err)
-		fmt.Fprintf(w, fmt.Sprintf("%s\nPings / Pongs: %s", string(logs), string(pingpong)))
+		fmt.Fprintf(w, fmt.Sprintf("%s\nPings / Pongs: %s", string(logs), string(pingpong[len(pingpong)-1])))
 	})
 
 	port := os.Getenv("PORT")
