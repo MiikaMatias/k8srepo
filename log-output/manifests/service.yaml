@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: log-reader-svc
+  namespace: applications
 spec:
   selector:
     app: log-output

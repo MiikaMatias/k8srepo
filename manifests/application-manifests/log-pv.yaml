@@ -1,16 +1,17 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: main-image
+  name: log-pv
+  namespace: applications
 spec:
-  storageClassName: main-image-cn 
+  storageClassName: log-pv-cn 
   capacity:
     storage: 1Gi
   volumeMode: Filesystem
   accessModes:
   - ReadWriteOnce
   local:
-    path: /tmp/main-image
+    path: /tmp/log-pv
   nodeAffinity: 
     required:
       nodeSelectorTerms:

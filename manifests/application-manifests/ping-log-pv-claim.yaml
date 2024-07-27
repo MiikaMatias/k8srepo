@@ -1,9 +1,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: log-pv-claim
+  name: ping-log-pv-claim
+  namespace: applications
 spec:
-  storageClassName: log-pv-cn 
+  storageClassName: ping-log-pv-cn 
   accessModes:
     - ReadWriteOnce
   resources:
