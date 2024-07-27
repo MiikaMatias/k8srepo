@@ -4,10 +4,55 @@
     <meta charset="utf-8">
     <title>K8S Project</title>
     <script>
-        function handleButtonClick() {
-            const inputField = document.getElementById('name');
-            alert('Input value: ' + inputField.value);
-        }
+	function handleButtonClick() {
+		const inputField = document.getElementById('name');
+		const inputValue = inputField.value;
+		
+		const data = {
+			todos: [inputValue]
+		};
+		
+		fetch('/todos', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(data)
+		})
+		.then(response => response.json())
+		.then(data => {
+			console.log(data);
+		})
+		.catch(error => {
+			console.error(error);
+		});
+		handleFetchTodos();
+	}
+
+    function displayTodoList(todos) {
+      const todoList = document.getElementById('todoList');
+      todoList.innerHTML = '';
+
+      todos.forEach(task => {
+        const listItem = document.createElement('li');
+        listItem.textContent = task;
+        todoList.appendChild(listItem);
+      });
+    }
+
+    function handleFetchTodos() {
+      fetch('/todos')
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        displayTodoList(data.todos);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+    }
+
+    handleFetchTodos();
     </script>
 </head>
 <body>
@@ -17,11 +62,10 @@
 	<div>
 		<input type="text" id="name" name="name" required minlength="4" maxlength="8" size="10" />
 		<button type="button" onclick="handleButtonClick()">Submit</button>
-		<ul>
-			<li>Buy coffee</li>
-			<li>Lol</li>
-			<li>3rd</li>
-		</ul>
+	</div>
+	<div>
+	<h2>Todo List:</h2>
+	<ul id="todoList"></ul>
 	</div>
 </body>
 </html>
