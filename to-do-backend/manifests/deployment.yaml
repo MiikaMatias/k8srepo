@@ -16,6 +16,7 @@ spec:
       containers:
         - name: to-do-backend
           image: kontrakti/to-do-backend:latest
+          imagePullPolicy: IfNotPresent
           env:
             - name: PORT
               value: "3000"

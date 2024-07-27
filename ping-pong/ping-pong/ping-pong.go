@@ -1,14 +1,29 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"sync"
+
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+
+	_ "github.com/lib/pq"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+var mu sync.Mutex
 
 const (
 	pingLogFilePath = "/pinglogs/pinglog.txt"
+	host            = "postgres-svc.applications.svc.cluster.local"
+	user            = "postgres"
+	dbname          = "db"
 )
 
 func check(e error) {
@@ -17,35 +32,79 @@ func check(e error) {
 	}
 }
 
-func writePing(pingString string) {
-	fmt.Printf("Started open file")
-	file, err := os.OpenFile(pingLogFilePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
-	check(err)
-	defer file.Close()
+func getCounter(w http.ResponseWriter, db *sql.DB) int {
+	var counter int
+	err := db.QueryRow("SELECT counter FROM db.ping_logs ORDER BY id DESC LIMIT 1 FOR UPDATE").Scan(&counter)
 
-	fmt.Printf("Started write ping")
-	_, err = file.WriteString(pingString)
+	if err == nil {
+		fmt.Fprintf(w, fmt.Sprintf("pong %s", fmt.Sprintf("%v", counter)))
+		return counter
+	} else {
+		panic(err)
+	}
+}
+
+func getPostgresPassword() string {
+	ctx := context.Background()
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+		configOverrides := &clientcmd.ConfigOverrides{}
+		kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
+		config, err = kubeConfig.ClientConfig()
+		check(err)
+	}
+
+	clientset, err := kubernetes.NewForConfig(config)
 	check(err)
 
-	fileInfo, _ := os.Stat(pingLogFilePath)
-	fmt.Printf("Log written successfully: %v\n", fileInfo)
+	secret, err := clientset.CoreV1().Secrets("applications").Get(ctx, "postgres-key", metav1.GetOptions{})
+	check(err)
+
+	var password = string(secret.Data["POSTGRES_PASS"])
+
+	return password
 }
 
 func main() {
-	// take this retarded variable and just use the file in the volume
-	counter := 0
+	password := getPostgresPassword()
+	psqlInfo := fmt.Sprintf("host=%s user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		host, user, password, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	} else {
+		fmt.Print("Postgres connection successful")
+	}
+
+	db.Exec("INSERT INTO db.ping_logs (counter) VALUES ($1)", 0)
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, fmt.Sprintf("pong %s", fmt.Sprintf("%v", counter)))
-		writePing(fmt.Sprintf("%v", counter))
+		mu.Lock()
+		defer mu.Unlock()
+
+		counter := getCounter(w, db)
 		counter++
+		db.Exec("DELETE FROM db.ping_logs WHERE id = (SELECT id FROM db.ping_logs ORDER BY id DESC LIMIT 1)")
+		db.Exec("INSERT INTO db.ping_logs (counter) VALUES ($1)", counter)
 	})
 	http.HandleFunc("/no-increment", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, fmt.Sprintf("pong %s", fmt.Sprintf("%v", counter)))
+		mu.Lock()
+		defer mu.Unlock()
+
+		getCounter(w, db)
 	})
 
 	port := os.Getenv("PORT")
 	fmt.Printf("Server started in port %s\n", port)
-	writePing("0")
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
 		log.Fatal(err)
 	}

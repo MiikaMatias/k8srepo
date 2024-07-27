@@ -1,0 +1,10 @@
+CREATE DATABASE db;
+
+\c db
+
+CREATE SCHEMA IF NOT EXISTS db;
+
+CREATE TABLE db.ping_logs (
+    id SERIAL PRIMARY KEY,
+    counter INTEGER NOT NULL DEFAULT 0
+);

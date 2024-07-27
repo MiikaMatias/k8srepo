@@ -20,18 +20,20 @@ spec:
       containers:
         - name: ping-pong
           image: kontrakti/ping-pong:latest
+          imagePullPolicy: IfNotPresent
           env: 
           - name: PORT
             value: "3000"
-          ports:
-            - containerPort: 3000
-          volumeMounts: 
-          - name: shared-ping-log
-            mountPath: /pinglogs
+          - name: POSTGRES_PASS 
+            valueFrom:
+              secretKeyRef:
+                name: postgres-key
+                key: POSTGRES_PASS
           resources:
             limits:
-              memory: 512Mi
-              cpu: "1"
+              memory: 1024Mi
+              cpu: "2"
             requests:
               memory: 256Mi
-              cpu: "0.2"
+              cpu: "1"
+
