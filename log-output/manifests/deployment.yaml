@@ -20,6 +20,14 @@ spec:
         - name: shared-ping-log
           persistentVolumeClaim:
             claimName: ping-log-pv-claim
+        - name: config
+          configMap:
+            name: log-config
+            items:
+            - key: "message"
+              path: "message"
+            - key: "log.properties"
+              path: "log.properties"
       containers:
         - name: log-writer
           image: kontrakti/log-writer:latest
@@ -45,6 +53,9 @@ spec:
             mountPath: /logs
           - name: shared-ping-log
             mountPath: /pinglogs
+          - name: config
+            mountPath: "/config"
+            readOnly: true
           resources:
             limits:
               memory: 512Mi

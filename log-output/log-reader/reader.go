@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	logFilePath = "/logs/log.txt"
-	pingPongUrl = "ping-pong-svc:2345/no-increment"
+	hashFilePath    = "/logs/log.txt"
+	configFilePath  = "/config/log.properties"
+	messageFilePath = "/config/message"
+	pingPongUrl     = "ping-pong-svc:2345/no-increment"
 )
 
 func check(e error) {
@@ -21,12 +23,16 @@ func check(e error) {
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		logs, err := os.ReadFile(logFilePath)
+		hash, err := os.ReadFile(hashFilePath)
 		check(err)
+		configText, err := os.ReadFile(configFilePath)
+		messageText, err := os.ReadFile(messageFilePath)
 		cmd := exec.Command("curl", pingPongUrl)
 		pingpong, err := cmd.Output()
 		check(err)
-		fmt.Fprintf(w, fmt.Sprintf("%s\nPings / Pongs: %s", string(logs), string(pingpong[len(pingpong)-1])))
+		fmt.Fprintf(w, fmt.Sprintf("file content: %s\nenv variable: %s \n%s \nPings / Pongs: %s",
+			string(configText), string(messageText),
+			string(hash), string(pingpong[len(pingpong)-1])))
 	})
 
 	port := os.Getenv("PORT")
